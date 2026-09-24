@@ -6910,8 +6910,15 @@ export class SessionsFlatList extends Disposable {
 		);
 
 		const chatRenderer = showChatChildren ? new SessionChatItemRenderer(
-			hoverService, instantiationService, contextKeyService, this._sessionsManagementService,
-			contextViewService, markdownRendererService, approvalModel, approvalRowMaxLines, undefined,
+			hoverService,
+			instantiationService,
+			contextKeyService,
+			this._sessionsManagementService,
+			contextViewService,
+			markdownRendererService,
+			approvalModel,
+			approvalRowMaxLines,
+			undefined,
 			() => this.tree.domFocus(),
 			item => withSessionsListHoverPresentation(createSessionSummaryHover(
 				item.session,
