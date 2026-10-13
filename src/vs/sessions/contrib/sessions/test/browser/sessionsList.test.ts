@@ -102,7 +102,6 @@ import { NEW_SESSION_ACTION_ID } from '../../../chat/common/constants.js';
 import { Menus } from '../../../../browser/menus.js';
 import { buildTestSession } from '../../../../services/sessions/test/common/testSessionBuilder.js';
 import { TestSessionsList } from './testSessionsList.js';
-import { ChatContextKeys } from '../../../../../workbench/contrib/chat/common/actions/chatContextKeys.js';
 import { KANBAN_CUSTOM_VIEW_ID, KANBAN_NEW_BOARD_COMMAND_ID, KANBAN_RENAME_BOARD_COMMAND_ID, KANBAN_DELETE_BOARD_COMMAND_ID, KANBAN_OPEN_BOARD_WINDOW_COMMAND_ID, MANAGE_KANBAN_COMMAND_ID } from '../../../../common/projectBoard.js';
 import { IProjectBoardCatalogService, IProjectBoardRecord } from '../../../projectBoard/common/projectBoardCatalog.js';
 import { defaultConfiguration } from '../../../projectBoard/common/projectBoardConfiguration.js';
@@ -7870,8 +7869,11 @@ suite('Sessions - SessionsList', () => {
 			const chat = {
 				resource: URI.parse(`test-chat://${title.replaceAll(' ', '-')}`),
 				title: observableValue('title', title),
+				description: constObservable(undefined),
 				updatedAt: constObservable(new Date()),
 				status: observableValue('status', SessionStatus.Completed),
+				isRead: constObservable(true),
+				isArchived: constObservable(false),
 				changes: constObservable([]),
 				changesets: constObservable([]),
 				workspace: observableValue<ISessionWorkspace | undefined>('workspace', undefined),
@@ -7979,11 +7981,11 @@ suite('Sessions - SessionsList', () => {
 				sections: 0,
 				expanded: 'true',
 				label: 'Ready sessions',
-				chatLabel: 'Peer, chat, updated now, State: Input Needed',
+				chatLabel: 'Peer, chat, updated now, State: Attention Needed',
 				chatNeedsInput: true,
 				mainNeedsInput: false,
-				heights: ['56px', '30px', '30px'],
-				contentHeight: 116,
+				heights: ['56px', '56px', '56px'],
+				contentHeight: 168,
 			});
 		});
 
@@ -8044,10 +8046,10 @@ suite('Sessions - SessionsList', () => {
 				collapsed,
 				hidden,
 				mainChanged: rowTitles(container),
-				notifiedExpandedHeight: heights.includes(116),
+				notifiedExpandedHeight: heights.includes(168),
 				notifiedCollapsedHeight: heights.includes(56),
 			}, {
-				afterRefresh: { sameTree: true, sameChild: true, focusedSession: true, focusedChat: true, titles: ['Session', 'Peer', 'Added'], height: 116 },
+				afterRefresh: { sameTree: true, sameChild: true, focusedSession: true, focusedChat: true, titles: ['Session', 'Peer', 'Added'], height: 168 },
 				collapsed: { titles: ['Session'], height: 56, expanded: 'false' },
 				hidden: ['Session'],
 				mainChanged: ['Session', 'Session main'],
@@ -8119,7 +8121,7 @@ suite('Sessions - SessionsList', () => {
 			});
 		});
 
-		test('reconciles nested chat folder heights when workspace metadata changes', () => {
+		test('keeps reserved nested chat row heights stable when workspace metadata changes', () => {
 			const peer = createChat('Peer');
 			const base = createChatSession('Session', [peer]).session;
 			const workspace = base.workspace.get();
@@ -8154,15 +8156,15 @@ suite('Sessions - SessionsList', () => {
 				folderLabel,
 				renderedHeightMatches: renderedHeight + 56 === withFolder,
 				restoredHeight: list.getContentHeight(),
-				notifiedFolder: heights.includes(withFolder),
-				notifiedRemoval: heights.includes(baseline),
+				heightEvents: heights,
+				folderRemovedFromAria: !row(container, 'Peer').getAttribute('aria-label')?.includes('different-project'),
 			}, {
-				addedHeight: 16,
+				addedHeight: 0,
 				folderLabel: 'different-project',
 				renderedHeightMatches: true,
 				restoredHeight: baseline,
-				notifiedFolder: true,
-				notifiedRemoval: true,
+				heightEvents: [],
+				folderRemovedFromAria: true,
 			});
 		});
 
