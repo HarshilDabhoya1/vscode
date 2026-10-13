@@ -11,6 +11,7 @@ import { IAgentHostInspectInfo, IAgentHostManagedSettingsDiagnostics, IAgentHost
 import { sealMissionControlCredential } from './missionControl/missionControlAuthentication.js';
 import { MissionControlEnvironment } from './missionControl/missionControlEnvironment.js';
 import { ISessionDataService } from '../common/sessionDataService.js';
+import { IAgentHostSystemWakeService } from './agentHostSystemWakeService.js';
 
 const SHUTDOWN_DRAIN_TIMEOUT_MS = 1000;
 const PROVIDER_SHUTDOWN_TIMEOUT_MS = 1500;
@@ -30,6 +31,7 @@ export class AgentHostManagementService implements IAgentHostManagementService {
 		private readonly _shutdownProtocolIngress: () => Promise<void>,
 		@ISessionDataService private readonly _sessionDataService: ISessionDataService,
 		@ILogService private readonly _logService: ILogService,
+		@IAgentHostSystemWakeService private readonly _systemWake: IAgentHostSystemWakeService,
 	) { }
 
 	setMissionControl(service: MissionControlEnvironment | undefined): void {
@@ -200,6 +202,11 @@ export class AgentHostManagementService implements IAgentHostManagementService {
 			throw new Error('Agent Host customization installation recovery is unavailable');
 		}
 		return this._runMutation(() => this._agentService.recoverCustomizationInstallations!(provider, session));
+	}
+
+	async setSystemFullyAwake(fullyAwake: boolean): Promise<void> {
+		this._logService.info(`[AgentHost] System is ${fullyAwake ? 'fully awake' : 'asleep or in a background wake'}`);
+		this._systemWake.setFullyAwake(fullyAwake);
 	}
 
 	shutdown(): Promise<void> {

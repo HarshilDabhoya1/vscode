@@ -882,6 +882,11 @@ export interface IAgentHostManagementService {
 	prepareCustomizationInstallation(provider: AgentProvider, session: URI, request: IAgentCustomizationInstallationRequest | { readonly installationId: string }): Promise<IAgentCustomizationInstallationReview>;
 	applyCustomizationInstallation(provider: AgentProvider, operationId: string): Promise<void>;
 	recoverCustomizationInstallations(provider: AgentProvider, session: URI): Promise<readonly IAgentCustomizationInstallation[]>;
+	/**
+	 * Local-only bridge for the owning client process to report whether the
+	 * machine is fully awake, rather than asleep or in a background maintenance wake.
+	 */
+	setSystemFullyAwake(fullyAwake: boolean): Promise<void>;
 	shutdown(): Promise<void>;
 	getNetworkDiagnosticsInfo(): Promise<IAgentHostNetworkDiagnosticsInfo>;
 	getManagedSettingsDiagnostics(): Promise<readonly IAgentHostManagedSettingsDiagnostics[]>;
